@@ -47,6 +47,46 @@ Cortex-A76 lacks the ARMv8.6 `bf16` extension. Apple Silicon M2 and later *do*
 have native BF16, and with Metal offload this may not matter at all — that's one
 of the things worth checking.
 
+### Already have the model in MLX?
+
+**MLX and llama.cpp are separate stacks.** MLX models are not GGUF, so
+`llama-server` cannot load one, and llama.cpp's GGUF cannot be loaded by MLX.
+You need either the GGUF above, or the MLX route below.
+
+The MLX route is the more interesting test, because MLX is Apple's own framework
+and may well beat llama.cpp on Apple Silicon. This harness never needs to own
+the server — anything speaking the OpenAI chat-completions API will do:
+
+```bash
+# start whatever OpenAI-compatible server your MLX setup provides
+# (check the mlx-vlm docs for the exact command - it changes between versions)
+
+# then point the harness at it and it will not touch llama.cpp at all
+EXPIRY_API_BASE=http://127.0.0.1:8080/v1 \
+EXPIRY_MODEL=<model name the server expects> \
+python3 scripts/selftest.py --limit 3
+```
+
+With `EXPIRY_API_BASE` set, the harness skips its GGUF and llama-server checks
+entirely and just sends requests. The image is passed as a base64 `image_url`,
+which is the standard OpenAI vision format — if the MLX server implements that,
+this works unmodified.
+
+**The comparison worth making, if you have the appetite:** the same 16 photos
+through MLX and through llama.cpp on the same Mac. Same model, same photos, two
+runtimes. Nobody publishes that number.
+
+Caveats for any non-llama.cpp backend:
+
+- **Timing is only comparable like-for-like.** MLX vs llama.cpp on the same Mac
+  is fair. Either against the Pi is a different chip entirely.
+- **Watch for an empty `expiry` with no error** — that means the reply was cut
+  off before it finished reasoning. Raise `EXPIRY_MAX_TOKENS` (default 800).
+- **Watch for prose instead of JSON.** The parser takes the last line starting
+  with `{`. If a server strips or reformats the reply, that can break.
+- Quantisation differs between stacks (MLX 4-bit is not GGUF Q4_K_M), so a small
+  accuracy difference is a real finding rather than a bug.
+
 ## Run it
 
 ```bash

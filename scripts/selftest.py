@@ -36,18 +36,26 @@ def preflight(pq):
         problems.append(f"missing ground truth: {TRUTH}")
     if not os.path.isdir(PHOTOS):
         problems.append(f"missing test photos: {PHOTOS}")
-    for label, p in (("model", pq.MODEL_PATH), ("projector", pq.MMPROJ)):
-        if not os.path.exists(p):
-            problems.append(f"missing {label}: {p}\n"
-                            "      download it per the README's Setup section")
-    from shutil import which
-    if not (which(pq.BACKEND) or os.path.exists(pq.BACKEND)):
-        problems.append(f"llama-server not found: {pq.BACKEND}\n"
-                        "      build llama.cpp, or set EXPIRY_BACKEND to its path")
     try:
         import PIL  # noqa: F401
     except ImportError:
         problems.append("Pillow not installed:  pip install pillow")
+
+    # With EXPIRY_API_BASE we talk to a server someone else is running (MLX,
+    # LM Studio, Ollama, a remote box) - no GGUF or llama-server needed here.
+    if os.environ.get("EXPIRY_API_BASE"):
+        return problems
+
+    for label, p in (("model", pq.MODEL_PATH), ("projector", pq.MMPROJ)):
+        if not os.path.exists(p):
+            problems.append(f"missing {label}: {p}\n"
+                            "      download it per the README's Setup section,\n"
+                            "      or set EXPIRY_API_BASE to an OpenAI-compatible server")
+    from shutil import which
+    if not (which(pq.BACKEND) or os.path.exists(pq.BACKEND)):
+        problems.append(f"llama-server not found: {pq.BACKEND}\n"
+                        "      build llama.cpp, set EXPIRY_BACKEND to its path,\n"
+                        "      or set EXPIRY_API_BASE to an OpenAI-compatible server")
     return problems
 
 
@@ -75,10 +83,16 @@ def main():
     if a.limit:
         names = names[:a.limit]
 
-    print(f"platform: {pq.PLATFORM}  (n_gpu_layers={pq.NGL}, threads={pq.THREADS or 'auto'}, "
-          f"flash_attn={pq.FLASH_ATTN}, mlock={pq.USE_MLOCK})")
-    print(f"model:     {os.path.basename(pq.MODEL_PATH)}")
-    print(f"projector: {os.path.basename(pq.MMPROJ)}")
+    external = os.environ.get("EXPIRY_API_BASE")
+    if external:
+        print(f"endpoint:  {external}  (external server — llama.cpp not used)")
+        print(f"model:     {read_expiry.MODEL}")
+    else:
+        print(f"platform:  {pq.PLATFORM}  (n_gpu_layers={pq.NGL}, "
+              f"threads={pq.THREADS or 'auto'}, flash_attn={pq.FLASH_ATTN}, "
+              f"mlock={pq.USE_MLOCK})")
+        print(f"model:     {os.path.basename(pq.MODEL_PATH)}")
+        print(f"projector: {os.path.basename(pq.MMPROJ)}")
     print(f"testing {len(names)} photo(s)\n")
 
     server = pq.Server()
@@ -113,10 +127,13 @@ def main():
         server.stop()
 
     times = [r["seconds"] for r in results] or [0]
-    summary = {"platform": pq.PLATFORM, "n_gpu_layers": pq.NGL,
-               "threads": pq.THREADS, "flash_attn": pq.FLASH_ATTN,
-               "model": os.path.basename(pq.MODEL_PATH),
-               "projector": os.path.basename(pq.MMPROJ),
+    summary = {"platform": "external" if external else pq.PLATFORM,
+               "endpoint": external or "managed llama-server",
+               "n_gpu_layers": None if external else pq.NGL,
+               "threads": None if external else pq.THREADS,
+               "flash_attn": None if external else pq.FLASH_ATTN,
+               "model": read_expiry.MODEL if external else os.path.basename(pq.MODEL_PATH),
+               "projector": None if external else os.path.basename(pq.MMPROJ),
                "load_seconds": round(load_s),
                "correct": correct, "total": len(results),
                "mean_seconds": round(sum(times) / len(times)),
