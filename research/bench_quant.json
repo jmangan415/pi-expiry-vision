@@ -1,0 +1,68 @@
+[
+  {
+    "model": "Q4_K_M",
+    "file": "IMG_6180.JPG",
+    "wall": 296,
+    "prompt_eval_s": 135,
+    "gen_tok": 402,
+    "gen_tps": 2.49,
+    "date": "07 AUG",
+    "item": "Scottish Mild Smoked Salmon",
+    "ok": true
+  },
+  {
+    "model": "Q4_K_M",
+    "file": "IMG_6181.JPG",
+    "wall": 318,
+    "prompt_eval_s": 128,
+    "gen_tok": 477,
+    "gen_tps": 2.5,
+    "date": "23.10.2026",
+    "item": "Babybel Original Cheese",
+    "ok": true
+  },
+  {
+    "model": "Q4_K_M",
+    "file": "IMG_6182.JPG",
+    "wall": 311,
+    "prompt_eval_s": 130,
+    "gen_tok": 457,
+    "gen_tps": 2.53,
+    "date": "04.08.2026",
+    "item": "JASONS SOURDOUGH WHITE CIABATTIN",
+    "ok": true
+  },
+  {
+    "model": "QAT_q4_0",
+    "file": "IMG_6180.JPG",
+    "wall": 317,
+    "prompt_eval_s": 130,
+    "gen_tok": 474,
+    "gen_tps": 2.52,
+    "date": "07 AUG",
+    "item": "Scottish Mild Smoked Salmon",
+    "ok": true
+  },
+  {
+    "model": "QAT_q4_0",
+    "file": "IMG_6181.JPG",
+    "wall": 315,
+    "prompt_eval_s": 129,
+    "gen_tok": 472,
+    "gen_tps": 2.55,
+    "date": "23.10.2026",
+    "item": "Babybel MINI Original",
+    "ok": true
+  },
+  {
+    "model": "QAT_q4_0",
+    "file": "IMG_6182.JPG",
+    "wall": 378,
+    "prompt_eval_s": 141,
+    "gen_tok": 519,
+    "gen_tps": 2.19,
+    "date": "04.08.2026",
+    "item": "Jason's Sourdough White Ciabatta",
+    "ok": true
+  }
+]

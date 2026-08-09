@@ -1,0 +1,30 @@
+
+===== BF16  (992 MB, threads=3) =====
+  load: 8s
+  IMG_6180.JPG: wall=534s  prompt_eval=357s/314tok  out=405tok
+     -> {"item":"Scottish Mild Smoked Salmon","date":"07 AUG"}
+     truth: ('smoked salmon', '07 AUG')
+  IMG_6181.JPG: wall=538s  prompt_eval=357s/307tok  out=418tok
+     -> {"item":"Babybel 100% Real Cheese Original","date":"23.10.2026"}
+     truth: ('babybel', '23.10.2026')
+  IMG_6182.JPG: wall=509s  prompt_eval=353s/307tok  out=384tok
+     -> {"item":"Jason's Sourdough White Ciabattin Bread","date":"04.08.2026"}
+     truth: ('sourdough / ciabatta', '04.08.2026')
+
+===== F16  (990 MB, threads=3) =====
+  load: 8s
+  IMG_6180.JPG: wall=270s  prompt_eval=117s/314tok  out=390tok
+     -> {"item":"Scottish Mild Smoked Salmon","date":"07 AUG"}
+     truth: ('smoked salmon', '07 AUG')
+  IMG_6181.JPG: wall=250s  prompt_eval=115s/307tok  out=346tok
+     -> {"item":"Babybel Mini Original Cheese","date":"23.10.2026"}
+     truth: ('babybel', '23.10.2026')
+  IMG_6182.JPG: wall=300s  prompt_eval=114s/307tok  out=417tok
+     -> {"item":"Jason's Sourdough White Ciabattin Bread","date":"04.08.2026"}
+     truth: ('sourdough / ciabatta', '04.08.2026')
+
+===== Q8_0  (560 MB, threads=3) =====
+  load: 6s
+  IMG_6180.JPG: wall=348s  prompt_eval=127s/314tok  out=418tok
+     -> {"item":"Scottish Mild Oak Smoked Salmon","date":"07 AUG"}
+     truth: ('smoked salmon', '07 AUG')

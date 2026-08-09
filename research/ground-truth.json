@@ -1,0 +1,82 @@
+{
+  "fresh-beetroot.jpg": {
+    "item": "Waitrose Fresh Beetroot",
+    "date": "15 AUG",
+    "note": ""
+  },
+  "spinach-feta-parcels.jpg": {
+    "item": "Waitrose Spinach & Feta Parcels",
+    "date": "14 AUG",
+    "note": ""
+  },
+  "mixed-salad.jpg": {
+    "item": "Waitrose Essential Mixed Salad",
+    "date": "11 Aug",
+    "note": "UPSIDE DOWN (180 deg)"
+  },
+  "pork-chipolatas.jpg": {
+    "item": "Waitrose Duchy Organic 12 Free Range Pork Chipolatas",
+    "date": "11 AUG",
+    "note": ""
+  },
+  "thai-green-curry.jpg": {
+    "item": "Charlie Bigham's Thai Green Chicken Curry & Rice",
+    "date": "10 AUG",
+    "note": "date on foil, low contrast"
+  },
+  "lamb-loin-chops.jpg": {
+    "item": "Waitrose Duchy Organic British Lamb Loin Chops",
+    "date": "20 AUG",
+    "note": "second upside-down label also visible"
+  },
+  "feta-honey-filo-rolls.jpg": {
+    "item": "Waitrose Feta & Honey Filo Rolls",
+    "date": "11 AUG",
+    "note": ""
+  },
+  "beef-burgers.jpg": {
+    "item": "Waitrose Duchy Organic 4 British Beef Burgers",
+    "date": "10 AUG",
+    "note": ""
+  },
+  "fage-yogurt.jpg": {
+    "item": "FAGE Total 5% Greek Yoghurt",
+    "date": "02.10.26",
+    "note": "dot-matrix on curved lid; 16 AUG decoy in background"
+  },
+  "baby-spinach.jpg": {
+    "item": "Waitrose Baby Spinach",
+    "date": "12 Aug",
+    "note": ""
+  },
+  "chicken-breast-fillets.jpg": {
+    "item": "Waitrose Duchy Organic 2 British Chicken Breast Fillets",
+    "date": "12 AUG",
+    "note": "price/barcode decoys"
+  },
+  "salmon-fillets.jpg": {
+    "item": "Waitrose Duchy Organic 2 Scottish Salmon Fillets",
+    "date": "11 Aug",
+    "note": ""
+  },
+  "pork-meatballs.jpg": {
+    "item": "Waitrose Duchy Organic 12 Free Range Pork Meatballs",
+    "date": "09 AUG",
+    "note": ""
+  },
+  "diced-casserole-steak.jpg": {
+    "item": "Waitrose Duchy Organic British Beef Diced Casserole Steak",
+    "date": "10 AUG",
+    "note": ""
+  },
+  "garlic-baguettes.jpg": {
+    "item": "Waitrose Essential 2 Garlic Baguettes",
+    "date": "16 AUG",
+    "note": "rotated 90 deg, small print"
+  },
+  "romaine-lettuce.jpg": {
+    "item": "Waitrose British Romaine Lettuce",
+    "date": "09 AUG",
+    "note": "BEST BEFORE not USE BY"
+  }
+}

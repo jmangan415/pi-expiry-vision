@@ -1,0 +1,8 @@
+# model weights - downloaded per the README, far too large for git
+models/
+*.gguf
+
+# runtime state
+data/
+__pycache__/
+*.pyc
