@@ -69,13 +69,41 @@ curl -L -o mmproj-F16.gguf \
   https://huggingface.co/unsloth/gemma-4-E4B-it-GGUF/resolve/main/mmproj-F16.gguf
 ```
 
-Then start the worker:
+Then check it works:
+
+```bash
+python3 scripts/selftest.py --limit 3    # quick
+python3 scripts/selftest.py              # all 16, scored against ground truth
+```
+
+And start the worker:
 
 ```bash
 python3 scripts/process_queue.py --watch 60
 ```
 
 It idles with no model loaded until work appears.
+
+### Platform profiles
+
+Settings are selected automatically by platform, and every one can be overridden.
+
+| | `rpi` | `mac` |
+|---|---|---|
+| status | **measured** | **untested** |
+| `--n-gpu-layers` | 0 (CPU only) | 99 (Metal offload) |
+| `--threads` | 3 | llama.cpp default |
+| `--flash-attn` | off | on |
+| `--mlock` | on | off |
+| per photo | ~310s | unknown, expected far quicker |
+
+Force one with `EXPIRY_PLATFORM=rpi|mac`, or override individually via
+`EXPIRY_NGL`, `EXPIRY_THREADS`, `EXPIRY_FLASH_ATTN`, `EXPIRY_MLOCK`, `EXPIRY_CTX`.
+
+The Pi numbers throughout this README are measured. **The Mac profile is a
+reasoned guess and has never been run** — if you try it, `MAC-TEST.md` has a
+short brief for handing to Claude, and reports of what actually happens are
+very welcome.
 
 ### ⚠️ Use the F16 projector
 
@@ -127,13 +155,16 @@ EXPIRY_SINK=/path/to/your/scan_items.py python3 scripts/process_queue.py --watch
 
 | Env var | Default |
 |---|---|
+| `EXPIRY_PLATFORM` | auto-detected (`rpi` / `mac`) |
 | `EXPIRY_BACKEND` | `llama-server` |
 | `EXPIRY_MODEL_PATH` | `models/gemma-4-E4B-it-Q4_K_M.gguf` |
 | `EXPIRY_MMPROJ` | `models/mmproj-F16.gguf` |
-| `EXPIRY_THREADS` | `3` |
+| `EXPIRY_THREADS` `EXPIRY_NGL` `EXPIRY_FLASH_ATTN` `EXPIRY_MLOCK` `EXPIRY_CTX` | from the platform profile |
 | `EXPIRY_SINK` | `scripts/store_items.py` |
+| `EXPIRY_DB` | `data/items.json` |
 | `EXPIRY_NOTIFY` | *(unset)* — command receiving a summary on stdin |
 | `EXPIRY_API_BASE` | *(unset)* — use an existing server instead of managing one |
+| `EXPIRY_TEMPLATE` | *(unset)* — uses the chat template inside the GGUF |
 
 ## Using it from a NanoClaw agent
 

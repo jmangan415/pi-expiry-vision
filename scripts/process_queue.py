@@ -18,7 +18,7 @@ Config (env):
     EXPIRY_THREADS     default 3
     EXPIRY_NOTIFY      optional command; receives a summary line on stdin
 """
-import argparse, json, os, shutil, signal, subprocess, sys, time, urllib.request
+import argparse, json, os, platform, shutil, signal, subprocess, sys, time, urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
@@ -32,7 +32,46 @@ MMPROJ = os.environ.get("EXPIRY_MMPROJ", os.path.join(ROOT, "models", "mmproj-F1
 # By default use the chat template embedded in the GGUF (--jinja). Only pass an
 # explicit template file if the user supplies one.
 TEMPLATE = os.environ.get("EXPIRY_TEMPLATE", "")
-THREADS = os.environ.get("EXPIRY_THREADS", "3")
+
+
+# ---------------------------------------------------------------- platforms --
+# Hardware differs enough that one set of flags is wrong somewhere. Override
+# with EXPIRY_PLATFORM=rpi|mac, or set individual EXPIRY_* vars to win outright.
+#
+#   rpi  MEASURED on a Pi 5 (16GB, Cortex-A76, CPU-only). ~5 min per item.
+#        3 threads beats 4: the 4th core speeds up image encoding but slows
+#        token generation, which is memory-bandwidth bound. Net loss.
+#
+#   mac  UNTESTED. Apple Silicon has a Metal GPU, so the model is offloaded to
+#        it rather than run on CPU - expect dramatically faster, likely well
+#        under a minute per item. Thread count is left to llama.cpp, which
+#        picks the performance cores. No --mlock: macOS restricts it without
+#        privileges and the unified memory makes it pointless.
+
+PROFILES = {
+    "rpi": {"n_gpu_layers": "0", "threads": "3", "flash_attn": "off",
+            "mlock": True, "ctx": "8192"},
+    "mac": {"n_gpu_layers": "99", "threads": None, "flash_attn": "on",
+            "mlock": False, "ctx": "8192"},
+}
+
+
+def detect_platform():
+    if platform.system() == "Darwin":
+        return "mac"
+    return "rpi"
+
+
+PLATFORM = os.environ.get("EXPIRY_PLATFORM") or detect_platform()
+if PLATFORM not in PROFILES:
+    sys.exit(f"unknown EXPIRY_PLATFORM {PLATFORM!r}; use one of {sorted(PROFILES)}")
+PROFILE = PROFILES[PLATFORM]
+
+THREADS = os.environ.get("EXPIRY_THREADS", PROFILE["threads"])
+NGL = os.environ.get("EXPIRY_NGL", PROFILE["n_gpu_layers"])
+FLASH_ATTN = os.environ.get("EXPIRY_FLASH_ATTN", PROFILE["flash_attn"])
+CTX = os.environ.get("EXPIRY_CTX", PROFILE["ctx"])
+USE_MLOCK = os.environ.get("EXPIRY_MLOCK", "1" if PROFILE["mlock"] else "0") == "1"
 PORT = int(os.environ.get("EXPIRY_PORT", "37460"))
 NOTIFY = os.environ.get("EXPIRY_NOTIFY", "")
 SINK = os.environ.get("EXPIRY_SINK", os.path.join(HERE, "store_items.py"))
@@ -81,16 +120,22 @@ class Server:
     def start(self):
         if self.external or self.proc:
             return
-        log = open(os.path.join(ROOT, "data", "queue", "server.log"), "w")
+        # Don't assume ensure_queue() has run - selftest.py starts a server
+        # without ever touching the queue.
+        log_path = os.path.join(ROOT, "data", "queue", "server.log")
+        os.makedirs(os.path.dirname(log_path), exist_ok=True)
+        log = open(log_path, "w")
         self.proc = subprocess.Popen([
             BACKEND, "--model", MODEL_PATH, "--mmproj", MMPROJ,
             "--host", "127.0.0.1", "--port", str(PORT),
-            "--ctx-size", "8192", "--n-gpu-layers", "0",
+            "--ctx-size", CTX, "--n-gpu-layers", NGL,
             "--batch-size", "2048", "--ubatch-size", "512",
-            "--threads", THREADS, "--parallel", "1",
+            "--parallel", "1",
             "--cache-type-k", "f16", "--cache-type-v", "f16",
-            "--flash-attn", "off", "--mlock", "--no-webui", "--jinja",
-        ] + (["--chat-template-file", TEMPLATE] if TEMPLATE else []),
+            "--flash-attn", FLASH_ATTN, "--no-webui", "--jinja",
+        ] + (["--threads", THREADS] if THREADS else [])
+          + (["--mlock"] if USE_MLOCK else [])
+          + (["--chat-template-file", TEMPLATE] if TEMPLATE else []),
             stdout=log, stderr=subprocess.STDOUT)
         self._log = log
         for _ in range(900):
