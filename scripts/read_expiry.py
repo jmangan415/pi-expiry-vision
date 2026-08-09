@@ -51,9 +51,11 @@ MONTHS = {m: i + 1 for i, m in enumerate(
 
 # day, month (name or number), optional 2/4-digit year. The year must not be
 # followed by more digits/letters so batch codes ("15 AUG 257MBA") don't match.
+# The year must not be followed by more digits, letters, or a '.' - otherwise
+# a batch code like "10 AUG 06.26 18 215" reads 06 as the year and gives 2006.
 DATE_RE = re.compile(
     r"(\d{1,2})\s*[./-]?\s*([A-Z]{3,9}|\d{1,2})"
-    r"(?:\s*[./-]?\s*(\d{4}|\d{2})(?![0-9A-Z]))?")
+    r"(?:\s*[./-]?\s*(\d{4}|\d{2})(?![0-9A-Z.]))?")
 
 
 def to_iso(raw, today=None):
@@ -79,6 +81,28 @@ def to_iso(raw, today=None):
         return d.isoformat()
     except ValueError:
         return None
+
+
+def last_json_object(text):
+    """Return the last complete JSON object in the reply, or None.
+
+    Brace-matched rather than line-based: different runtimes format the same
+    reply differently. llama.cpp tends to emit a one-liner, MLX often
+    pretty-prints inside a ```json fence. A line-scan finds only a bare '{'
+    there and silently fails, which cost 4 of 16 on the first Mac run.
+    """
+    dec = json.JSONDecoder()
+    found = None
+    for i, ch in enumerate(text):
+        if ch != "{":
+            continue
+        try:
+            obj, _ = dec.raw_decode(text[i:])
+        except ValueError:
+            continue
+        if isinstance(obj, dict):
+            found = obj
+    return found
 
 
 def encode(path, max_dim=1024):
@@ -112,15 +136,7 @@ def read_item(paths, timeout=1800):
     if choice.get("finish_reason") == "length" and not text.strip():
         return {"photos": paths, "error": "truncated during reasoning - raise EXPIRY_MAX_TOKENS"}
 
-    parsed = None
-    for line in reversed(text.strip().splitlines()):
-        line = line.strip().strip("`")
-        if line.startswith("{"):
-            try:
-                parsed = json.loads(line)
-                break
-            except json.JSONDecodeError:
-                pass
+    parsed = last_json_object(text)
     if not parsed:
         return {"photos": paths, "error": "no JSON in reply", "raw": text.strip()[-200:]}
 

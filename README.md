@@ -11,12 +11,18 @@ agent's expiry tracker, but the scripts work standalone.
 Yes. On 16 real fridge photos it got **16/16 products and 16/16 dates**, and
 agreed with a frontier model on **every** item they both read.
 
-| | Frontier model | Gemma 4 E4B on a Pi 5 |
-|---|---|---|
-| Dates correct | 13/13 | **16/16** |
-| Time per item | ~2 sec | ~5 min |
-| Cost | per-image | **£0** |
-| Works offline | no | **yes** |
+| | Frontier model | Pi 5 (llama.cpp, GGUF) | M5 Pro Mac (LM Studio, MLX) |
+|---|---|---|---|
+| Dates correct | 13/13 | **16/16** | 15/16 |
+| Time per item | ~2 sec | ~5 min | **~8 sec** |
+| Generation | — | 2.5 tok/s | **55 tok/s** |
+| Cost | per-image | **£0** | **£0** |
+| Works offline | no | **yes** | **yes** |
+
+The Mac is ~39× faster, which makes local scanning genuinely interactive rather
+than a background job. Its single miss was the model **declining** to guess on an
+unlabelled date stamp — it returned `null` rather than inventing one, which is
+the behaviour we want.
 
 The test set is included in [`research/photos/`](research/photos) with
 [ground truth](research/ground-truth.json), so you can reproduce it. It is not a
@@ -24,9 +30,14 @@ soft set — it includes a pack photographed **upside down**, one **rotated 90°
 dot-matrix dates on curved foil, and a yoghurt pot with a *different* product's
 date clearly legible in the background. All read correctly.
 
-The trade is speed, not accuracy. Five minutes an item means this is a
-background job, never something a user waits on — which is why the whole design
-is a queue.
+The trade is speed, not accuracy — and how much speed depends entirely on your
+hardware. On a Pi, five minutes an item makes this a background job, which is why
+the whole design is a queue. On Apple Silicon it is fast enough to just wait for.
+The queue costs nothing either way.
+
+Before touching the parser, run `python3 scripts/test_parsing.py` — it takes a
+second, needs no model, and every case in it comes from something that actually
+broke.
 
 ## How it works
 
@@ -90,20 +101,27 @@ Settings are selected automatically by platform, and every one can be overridden
 
 | | `rpi` | `mac` |
 |---|---|---|
-| status | **measured** | **untested** |
+| status | **measured** | still **unmeasured** — see below |
 | `--n-gpu-layers` | 0 (CPU only) | 99 (Metal offload) |
 | `--threads` | 3 | llama.cpp default |
 | `--flash-attn` | off | on |
 | `--mlock` | on | off |
-| per photo | ~310s | unknown, expected far quicker |
+| per photo | ~310s | — |
 
 Force one with `EXPIRY_PLATFORM=rpi|mac`, or override individually via
 `EXPIRY_NGL`, `EXPIRY_THREADS`, `EXPIRY_FLASH_ATTN`, `EXPIRY_MLOCK`, `EXPIRY_CTX`.
 
-The Pi numbers throughout this README are measured. **The Mac profile is a
-reasoned guess and has never been run** — if you try it, `MAC-TEST.md` has a
-short brief for handing to Claude, and reports of what actually happens are
-very welcome.
+**Careful with the Mac numbers above.** The 8s/photo result came through LM
+Studio serving an **MLX** build, using `EXPIRY_API_BASE` — which bypasses these
+profiles entirely. The llama.cpp `mac` profile itself has still never been run,
+so those flag values remain a reasoned guess.
+
+Pointing at any OpenAI-compatible server is often the easier route on a Mac:
+
+```bash
+EXPIRY_API_BASE=http://127.0.0.1:1234/v1 EXPIRY_MODEL=google/gemma-4-e4b \
+  python3 scripts/selftest.py
+```
 
 ### ⚠️ Use the F16 projector
 
