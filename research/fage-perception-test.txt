@@ -1,0 +1,56 @@
+server up
+
+======================================================================
+== describe  (660s)
+======================================================================
+This photo is a high-angle, flat lay shot of various food items and packaging arranged on a wooden surface, suggesting a meal preparation or grocery haul scene. The lighting is bright and natural.
+
+***
+
+### Distinct Items and Details
+
+**Foreground:**
+*   **Plastic Lid/Container:** A round, clear plastic lid dominates the foreground. It features white and blue branding for a dairy product.
+    *   **Text/Numbers Quoted:**
+        *   "02.10.26" (appears twice)
+        *   "M6" (appears twice)
+        *   "FAGE" (logo)
+        *   "Total"
+        *   "5%"
+        *   (A small registered trademark symbol $\text{R}$ is visible near the logo.)
+
+**Background:**
+*   **Bag of Leafy Greens:** Located in the upper left quadrant, this is a plastic-bagged bundle of dark green, leafy vegetables (likely spinach).
+    *   **Text/Numbers Quoted:** None visible.
+*   **Bread/Toast:** Two slices of bread, possibly toasted or spread, are visible in the upper center.
+    *   **Text/Numbers Quoted:** None visible.
+*   **White Packaging/Paper:** Located in the upper right quadrant, this is a piece of white paper packaging.
+    *   **Text/Numbers Quoted:**
+        *   "16 AUG"
+        *   "SERVING SUGGESTION"
+*   **White Cloth/Napkin:** A folded white cloth or napkin is visible beneath the white packaging on the right side.
+    *   **Text/Numbers Quoted:** None visible.
+*   **Wooden Surface:** The entire arrangement rests on a wooden board or table.
+    *   **Text/Numbers Quoted:** None visible.
+*   **Person's Legs/Feet:** Visible at the bottom of the frame, suggesting the photographer is lying down or sitting close to the surface.
+    *   **Text/Numbers Quoted:** None visible.
+
+***
+
+### Summary of
+
+======================================================================
+== which_date  (409s)
+======================================================================
+Based on the photo, there are **2** different dates visible.
+
+**Dates Found:**
+
+1.  **02.10.26:** Printed on the FAGE yogurt container.
+2.  **16 AUG:** Printed on the white paper/card in the background.
+
+***
+
+The main subject of the photo is the **FAGE yogurt container**.
+
+=== DESCRIBE DONE ===
