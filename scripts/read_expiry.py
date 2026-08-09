@@ -12,17 +12,20 @@ Output: one JSON object per item on stdout.
 Config (env):
     EXPIRY_API_BASE   default http://127.0.0.1:1234/v1
     EXPIRY_MODEL      default google/gemma-4-e4b
-    EXPIRY_MAX_TOKENS default 800   # MUST stay generous: Gemma emits
-                                    # ~200-400 reasoning tokens before any
+    EXPIRY_MAX_TOKENS default 1200  # MUST stay generous: Gemma emits
+                                    # hundreds of reasoning tokens before any
                                     # visible output. Too low returns an
-                                    # empty string, not an error.
+                                    # empty string, not an error. Simple
+                                    # photos use ~450; a frame containing two
+                                    # products pushed one run to exactly 800
+                                    # and it returned nothing at all.
 """
 import argparse, base64, io, json, os, re, sys, urllib.request
 from datetime import date, timedelta
 
 API_BASE = os.environ.get("EXPIRY_API_BASE", "http://127.0.0.1:1234/v1")
 MODEL = os.environ.get("EXPIRY_MODEL", "google/gemma-4-e4b")
-MAX_TOKENS = int(os.environ.get("EXPIRY_MAX_TOKENS", "800"))
+MAX_TOKENS = int(os.environ.get("EXPIRY_MAX_TOKENS", "1200"))
 
 ONE_PHOTO = "The photo below shows one food item going into a kitchen expiry tracker."
 MANY_PHOTOS = (

@@ -196,10 +196,16 @@ will helpfully analyse them in two seconds and the local model never runs.
 The measurements behind the defaults, all on a Pi 5 (Cortex-A76, 4 cores,
 CPU-only). Raw data in [`research/`](research).
 
-**The empty-response trap.** Gemma 4 emits 200–400 *reasoning* tokens before any
-visible output. With a low `max_tokens` you get `finish_reason: "length"` and an
-**empty string** — which looks exactly like broken vision. It isn't. Keep
-`max_tokens` ≥ 800. This cost hours to diagnose.
+**The empty-response trap.** Gemma 4 emits hundreds of *reasoning* tokens before
+any visible output. With a low `max_tokens` you get `finish_reason: "length"` and
+an **empty string** — which looks exactly like broken vision. It isn't. This cost
+hours to diagnose.
+
+How much headroom you need scales with how busy the photo is. Single-product
+shots averaged ~450 completion tokens; a frame containing *two* products averaged
+657, and one hit exactly 800 and returned nothing at all. The default is now
+**1200**. Raising it costs nothing when unused — the model stops when it is
+finished.
 
 **Don't disable reasoning.** Turning thinking off is a genuine 2.4× speedup
 (515 → 40 output tokens), but accuracy collapsed to 2/4 on hard cases — and it

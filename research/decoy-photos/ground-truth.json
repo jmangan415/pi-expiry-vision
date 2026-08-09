@@ -1,0 +1,112 @@
+{
+  "01-lamb-loin-chops-with-pork-meatballs.jpg": {
+    "subject": "lamb-loin-chops",
+    "correct_date": "20 AUG",
+    "decoy_product": "pork-meatballs",
+    "decoy_date": "09 AUG",
+    "decoy_side": "right",
+    "size": [
+      1243,
+      1024
+    ]
+  },
+  "02-fage-yogurt-with-garlic-baguettes.jpg": {
+    "subject": "fage-yogurt",
+    "correct_date": "02.10.26",
+    "decoy_product": "garlic-baguettes",
+    "decoy_date": "16 AUG",
+    "decoy_side": "right",
+    "size": [
+      1243,
+      1024
+    ]
+  },
+  "03-fresh-beetroot-with-romaine-lettuce.jpg": {
+    "subject": "fresh-beetroot",
+    "correct_date": "15 AUG",
+    "decoy_product": "romaine-lettuce",
+    "decoy_date": "09 AUG",
+    "decoy_side": "left",
+    "size": [
+      1243,
+      1024
+    ]
+  },
+  "04-salmon-fillets-with-lamb-loin-chops.jpg": {
+    "subject": "salmon-fillets",
+    "correct_date": "11 Aug",
+    "decoy_product": "lamb-loin-chops",
+    "decoy_date": "20 AUG",
+    "decoy_side": "right",
+    "size": [
+      1381,
+      768
+    ]
+  },
+  "05-garlic-baguettes-with-beef-burgers.jpg": {
+    "subject": "garlic-baguettes",
+    "correct_date": "16 AUG",
+    "decoy_product": "beef-burgers",
+    "decoy_date": "10 AUG",
+    "decoy_side": "left",
+    "size": [
+      1243,
+      1024
+    ]
+  },
+  "06-spinach-feta-parcels-with-pork-meatballs.jpg": {
+    "subject": "spinach-feta-parcels",
+    "correct_date": "14 AUG",
+    "decoy_product": "pork-meatballs",
+    "decoy_date": "09 AUG",
+    "decoy_side": "left",
+    "size": [
+      1243,
+      1024
+    ]
+  },
+  "07-baby-spinach-with-fresh-beetroot.jpg": {
+    "subject": "baby-spinach",
+    "correct_date": "12 Aug",
+    "decoy_product": "fresh-beetroot",
+    "decoy_date": "15 AUG",
+    "decoy_side": "right",
+    "size": [
+      1243,
+      1024
+    ]
+  },
+  "08-beef-burgers-with-lamb-loin-chops.jpg": {
+    "subject": "beef-burgers",
+    "correct_date": "10 AUG",
+    "decoy_product": "lamb-loin-chops",
+    "decoy_date": "20 AUG",
+    "decoy_side": "left",
+    "size": [
+      1243,
+      1024
+    ]
+  },
+  "09-romaine-lettuce-with-garlic-baguettes.jpg": {
+    "subject": "romaine-lettuce",
+    "correct_date": "09 AUG",
+    "decoy_product": "garlic-baguettes",
+    "decoy_date": "16 AUG",
+    "decoy_side": "right",
+    "size": [
+      1243,
+      1024
+    ]
+  },
+  "10-pork-chipolatas-with-fresh-beetroot.jpg": {
+    "subject": "pork-chipolatas",
+    "correct_date": "11 AUG",
+    "decoy_product": "fresh-beetroot",
+    "decoy_date": "15 AUG",
+    "decoy_side": "left",
+    "size": [
+      1243,
+      1024
+    ]
+  }
+}
