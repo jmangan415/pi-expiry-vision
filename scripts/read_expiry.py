@@ -47,6 +47,11 @@ TASK = (
     "package that the product name appears on. Other products may be visible "
     "behind or beside it - their dates are irrelevant, however clearly you can "
     "read them. Copy the date exactly as it is printed - do not reformat it.\n"
+    # Packs often print a packing date beside the use-by (eggs: "26 AUG" next
+    # to "BEST BEFORE 02 SEP"). Transcribing both left the parser to guess,
+    # and it took the wrong one.
+    "If several dates are printed, give the use-by or best-before date, not a "
+    "packing or display date. Ignore batch codes and times printed near it.\n"
     "If no expiry date is visible in any photo, use null for the date rather "
     "than guessing.\n"
     'Finish your reply with one JSON object on its own line: '
@@ -81,7 +86,20 @@ def to_iso(raw, today=None):
     try:
         if year_s:
             y = int(year_s)
-            return date(y + 2000 if y < 100 else y, month, day).isoformat()
+            d = date(y + 2000 if y < 100 else y, month, day)
+            # An explicit year that lands far in the past is almost always a
+            # batch code misread as a year, not a genuinely ancient item.
+            # Seen in production: "24 AUG 2023" off a pack printing only
+            # "24 AUG" above batch "6 228 - 17:09", and "26 AUG 02 SEP" (two
+            # dates) parsed as year 02 -> 2002.
+            #
+            # Declining is deliberate. Returning the year-less reading would be
+            # guessing, and a wrongly-past date is worse than no date: the
+            # tracker auto-purges expired fridge items, so the row silently
+            # disappears instead of being questioned.
+            if d < (today - timedelta(days=400)):
+                return None
+            return d.isoformat()
         d = date(today.year, month, day)
         if d < today - timedelta(days=60):       # already well past: next year
             d = date(today.year + 1, month, day)
