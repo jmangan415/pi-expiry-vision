@@ -95,6 +95,19 @@ python3 scripts/process_queue.py --watch 60
 
 It idles with no model loaded until work appears.
 
+**Run it as a service.** Photos queued while no worker is running simply sit
+there - 13 of them once waited 10 days because nothing was up and nothing said
+so. `expiry-scan-worker.service.example` is a systemd `--user` unit with
+`Restart=always`, a `MemoryMax` cap covering llama-server (which runs as a
+child in the same cgroup) and `Nice=10` so a batch cannot make the desktop
+unusable:
+
+```bash
+cp expiry-scan-worker.service.example ~/.config/systemd/user/expiry-scan-worker.service
+# edit the paths, then
+systemctl --user daemon-reload && systemctl --user enable --now expiry-scan-worker
+```
+
 ### Platform profiles
 
 Settings are selected automatically by platform, and every one can be overridden.

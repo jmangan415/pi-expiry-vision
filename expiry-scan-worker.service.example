@@ -1,0 +1,27 @@
+[Unit]
+Description=Fridge Expiry local photo scanner (drains data/queue with Gemma 4)
+After=network.target
+
+[Service]
+WorkingDirectory=/home/aipi/projects/expirations/fridge-expiry
+ExecStart=/home/linuxbrew/.linuxbrew/bin/python3 -u scripts/process_queue.py --watch 60
+
+# The whole point of the service: photos queued by the agent are processed
+# whether or not anyone remembered to start a worker. 13 photos once sat
+# untouched for 10 days because nothing was running.
+Restart=always
+RestartSec=10
+
+# llama-server is a child of this process; the cgroup cap therefore covers
+# both. It sits at ~6.8GB, so 9G leaves headroom while still guaranteeing the
+# worker can never take the whole 16GB Pi down - which it has done before.
+MemoryMax=9G
+
+# Never let a background batch make the desktop unusable.
+Nice=10
+
+StandardOutput=append:/home/aipi/projects/expirations/fridge-expiry/data/queue/worker.out
+StandardError=inherit
+
+[Install]
+WantedBy=default.target

@@ -203,7 +203,12 @@ def process(job, server):
     meta = json.load(open(os.path.join(d, "job.json")))
     photos = [os.path.join(d, p) for p in meta["photos"]]
 
-    os.environ["EXPIRY_API_BASE"] = server.base
+    # Set the module attribute, NOT the env var: read_expiry binds API_BASE at
+    # import time, so os.environ has no effect once it is loaded. This silently
+    # sent every request to read_expiry's default (LM Studio on :1234) instead
+    # of the server we just started, and only "worked" while LM Studio happened
+    # to be running.
+    read_expiry.API_BASE = server.base
     result = read_expiry.read_item(photos)
     result["job"] = job
     result["category"] = meta.get("category")

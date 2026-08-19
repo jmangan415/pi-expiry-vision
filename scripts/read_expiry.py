@@ -38,11 +38,15 @@ TASK = (
     # "on that pack" matters. An earlier wording of "on the packaging" let the
     # model read a date off a different product in the background (it returned
     # the garlic bread's 16 AUG for a yoghurt pot dated 02.10.26).
-    "\nIdentify the product, and read the expiry date printed on that pack "
-    "itself (it may be labelled USE BY or BEST BEFORE). Other products may be "
-    "visible behind or beside it - ignore their dates completely; only the date "
-    "on the item in the foreground counts. Copy the date exactly as it is "
-    "printed - do not reformat it.\n"
+    # Do NOT mention "USE BY or BEST BEFORE" here. Naming the labels makes the
+    # model treat them as required: shown a bare date stamp it reads the date
+    # correctly, decides it is not captioned, and returns null. Anchoring to
+    # "the SAME package the product name appears on" fixes the background-decoy
+    # case without that side effect. Measured 3/3 vs 2/3 for the wording above.
+    "\nIdentify the product, then read the expiry date printed on the SAME "
+    "package that the product name appears on. Other products may be visible "
+    "behind or beside it - their dates are irrelevant, however clearly you can "
+    "read them. Copy the date exactly as it is printed - do not reformat it.\n"
     "If no expiry date is visible in any photo, use null for the date rather "
     "than guessing.\n"
     'Finish your reply with one JSON object on its own line: '
