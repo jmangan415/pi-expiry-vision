@@ -32,10 +32,12 @@ DATES = [
     ("10 AUG H4F",          "2026-08-10", "letter code"),
     # Production misreads: a batch code garbled into a year. Declining beats
     # logging a past date, which the tracker would auto-purge silently.
-    ("24 AUG 2023",         None,         "batch code read as year; pack said only '24 AUG'"),
-    ("23 Aug 2023",         None,         "same, from 'L0398A VL4225 07:41'"),
-    ("26 AUG 02 SEP",       None,         "two dates; '02' of 02 SEP read as year 2002"),
-    ("21/08/23",            None,         "3 years past: implausible for an expiry tracker"),
+    ("24 AUG 2023",         "2026-08-24", "batch code read as year; drop it, keep the date"),
+    ("23 Aug 2023",         "2026-08-23", "same, from 'L0398A VL4225 07:41'"),
+    ("26 AUG 02 SEP",       "2026-08-26", "run together, no separator: only one date parses"),
+    ("26 AUG | 02 SEP",     "2026-09-02", "eggs: packing date beside best-before, take the later"),
+    ("21/08/23",            "2026-08-21", "implausible year dropped, day/month kept"),
+    ("11 AUG 215",          "2026-08-11", "'215' parses as 21 May - must not win as 'latest'"),
     ("24 AUG 2026",         "2026-08-24", "a real explicit year still works"),
     ("02 SEP",              "2026-09-02", "the eggs, once the model picks the right date"),
     ("N/A",                 None,         "model declined - must not invent"),

@@ -70,15 +70,11 @@ DATE_RE = re.compile(
     r"(?:\s*[./-]?\s*(\d{4}|\d{2})(?![0-9A-Z.]))?")
 
 
-def to_iso(raw, today=None):
-    """'11 AUG' -> '2026-08-11'.  UK day-first; infers a missing year."""
-    if not raw:
-        return None
-    today = today or date.today()
-    m = DATE_RE.search(str(raw).strip().upper())
-    if not m:
-        return None
+def _from_match(m, today, ignore_year=False):
+    """One regex match -> (date, year_was_explicit) or None."""
     day_s, mon_s, year_s = m.groups()
+    if ignore_year:
+        year_s = None
     day = int(day_s)
     month = MONTHS.get(mon_s[:3]) if mon_s[:1].isalpha() else int(mon_s)
     if not month or not 1 <= month <= 12 or not 1 <= day <= 31:
@@ -86,26 +82,77 @@ def to_iso(raw, today=None):
     try:
         if year_s:
             y = int(year_s)
-            d = date(y + 2000 if y < 100 else y, month, day)
-            # An explicit year that lands far in the past is almost always a
-            # batch code misread as a year, not a genuinely ancient item.
-            # Seen in production: "24 AUG 2023" off a pack printing only
-            # "24 AUG" above batch "6 228 - 17:09", and "26 AUG 02 SEP" (two
-            # dates) parsed as year 02 -> 2002.
-            #
-            # Declining is deliberate. Returning the year-less reading would be
-            # guessing, and a wrongly-past date is worse than no date: the
-            # tracker auto-purges expired fridge items, so the row silently
-            # disappears instead of being questioned.
-            if d < (today - timedelta(days=400)):
-                return None
-            return d.isoformat()
+            return date(y + 2000 if y < 100 else y, month, day), True
         d = date(today.year, month, day)
-        if d < today - timedelta(days=60):       # already well past: next year
+        if d < today - timedelta(days=60):          # already well past: next year
             d = date(today.year + 1, month, day)
-        return d.isoformat()
-    except ValueError:
+        return d, False
+    except ValueError:                              # e.g. 31 Feb
         return None
+
+
+# How far out of range a date may be before we stop believing it. Food being
+# added to a tracker is current stock, so a date years in the past is a
+# misread, not a genuinely ancient item.
+_MAX_PAST = timedelta(days=400)
+_MAX_FUTURE = timedelta(days=5 * 365)
+
+
+def to_iso_detail(raw, today=None):
+    """'11 AUG' -> ('2026-08-11', flags).  UK day-first.
+
+    Two behaviours worth knowing, both from real misreads:
+
+    * SEVERAL DATES -> take the LATEST. Packs print a packing or display date
+      beside the expiry ("26 AUG | 02 SEP" on eggs); on food the expiry is
+      always the later one. Taking the first gave the packing date.
+
+    * IMPLAUSIBLE EXPLICIT YEAR -> drop it and infer. The model reads adjacent
+      batch codes as years ("24 AUG" above "6 228 - 17:09" came back as
+      "24 AUG 2023"). The day and month are on the pack; the year is the
+      suspect part, so we prefer the year-less reading and flag it rather than
+      discarding an otherwise good date.
+    """
+    flags = []
+    if not raw:
+        return None, flags
+    today = today or date.today()
+
+    # Batch codes produce spurious matches: "215" parses as 21 May, and it is
+    # LATER than the real date, so a naive "take the latest" picks the junk.
+    # A genuine printed date has an alphabetic month ("10 AUG") or explicit
+    # separators ("02.10.26"); a bare digit run has neither. Strong matches
+    # win outright; weak ones are only consulted if there are no strong ones.
+    strong, weak = [], []
+    for m in DATE_RE.finditer(str(raw).strip().upper()):
+        text = m.group(0)
+        is_strong = m.group(2)[:1].isalpha() or any(c in text for c in "./-")
+        got = _from_match(m, today)
+        if got and got[1] and not (today - _MAX_PAST <= got[0] <= today + _MAX_FUTURE):
+            # Explicit year is implausible - retry the same characters without it.
+            retry = _from_match(m, today, ignore_year=True)
+            if retry:
+                flags.append(f"ignored implausible year in {m.group(0)!r}")
+                got = retry
+            else:
+                got = None
+        if not got:
+            continue
+        d = got[0]
+        if today - _MAX_PAST <= d <= today + _MAX_FUTURE:
+            (strong if is_strong else weak).append(d)
+
+    candidates = strong or weak
+    if not candidates:
+        return None, flags
+    if len(candidates) > 1:
+        flags.append(f"{len(candidates)} dates found, took the latest")
+    return max(candidates).isoformat(), flags
+
+
+def to_iso(raw, today=None):
+    """Backwards-compatible wrapper: just the ISO date, or None."""
+    return to_iso_detail(raw, today)[0]
 
 
 def last_json_object(text):
@@ -166,10 +213,16 @@ def read_item(paths, timeout=1800):
         return {"photos": paths, "error": "no JSON in reply", "raw": text.strip()[-200:]}
 
     raw = parsed.get("expiry")
-    return {"photos": [os.path.basename(p) for p in paths],
-            "item": parsed.get("item"),
-            "expiry_raw": raw,
-            "expiry_iso": to_iso(raw)}
+    iso, flags = to_iso_detail(raw)
+    out = {"photos": [os.path.basename(p) for p in paths],
+           "item": parsed.get("item"),
+           "expiry_raw": raw,
+           "expiry_iso": iso}
+    # Surface any judgement the parser made, so an override is visible in the
+    # worker log rather than silently applied.
+    if flags:
+        out["date_notes"] = flags
+    return out
 
 
 def main():
